@@ -1,0 +1,59 @@
+
+// ==UserScript==
+// @name       Screeps Sound Events
+// @version    0.1
+// @description  Play sounds when playSound message are sent to console from screeps.
+// @match      http://screeps.com/g/*
+// @match      http://www.screeps.com/g/*
+// @match      www.screeps.com/g/*
+// ==/UserScript==
+
+var lastTimeStamp = '';
+var audioElement = null;
+
+var sound = function() {
+	var message = $('.console-message span').last().text();
+    var timeStamp = $('.console-message .timestamp').last().text();
+    
+    if (lastTimeStamp == timeStamp) {
+        return;
+    }
+    
+    var command = message.split(' ');
+    if (command.length != 2) return;
+    
+    if (command[0] == 'playSound') {
+    
+        if (command[1] == 'complete')
+            audioElement.setAttribute('src', 'http://www.thanatosrealms.com/war2/sounds/orcs/basic-orc-voices/work-complete.wav');
+    
+        audioElement.play();
+    }
+    
+    lastTimeStamp = timeStamp;
+    
+};
+
+var setSoundControl = function() {
+	audioElement = document.createElement('audio');
+    document.body.appendChild(audioElement);
+}
+
+// Delay injections until the user enters the game proper
+var waitForGameConsole = function() {
+    if (document.evaluate("//div[contains(@class, 'console-messages-list')]", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue) {
+        setSoundControl();
+        return;
+    }
+    setTimeout(waitForGameConsole, 1000);
+};
+
+var continuousSoundLoop = function() {
+    if (document.evaluate("//div[contains(@class, 'console-messages-list')]", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue) {
+        sound();
+    }
+    setTimeout(continuousSoundLoop, 100);
+};
+
+waitForGameConsole();
+continuousSoundLoop();
