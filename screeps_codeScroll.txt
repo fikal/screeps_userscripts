@@ -1,0 +1,37 @@
+var sourceCodePosition = function () {
+
+    var previousSelectedModule = null;
+    var newSelectedModule = null;
+    var modules = [];
+    var divClicked = false;
+    
+    $('.module-item').bind('click', function(ev) {
+		newSelectedModule = this.textContent.trim();
+        if (previousSelectedModule != newSelectedModule) {
+            modules[previousSelectedModule] = $('.ace_scrollbar').scrollTop();
+        }
+        
+        previousSelectedModule = newSelectedModule;
+        divClicked = true;
+	});
+    
+    ace.edit($('div.ace_editor')[0]).getSession().on('changeScrollTop', function() {
+        var scrollTop = $('.ace_scrollbar').scrollTop();
+        if (scrollTop == 0 && divClicked == true && newSelectedModule != null && modules[newSelectedModule] != null) {
+        	$('.ace_scrollbar').scrollTop = modules[newSelectedModule];
+            divClicked = false;
+        }
+    });
+}
+
+// Delay injections until the user enters the game proper
+var waitForGameConsole = function() {
+    
+    if (!$('.console-messages-list').length) return setTimeout(waitForGameConsole, 1000);
+    
+    sourceCodePosition();
+    
+};
+ 
+waitForGameConsole();
+
